@@ -24,6 +24,9 @@ import Dashboard from "@/pages/dashboard";
 import { BookOpen, Home } from "lucide-react";
 import SubjectsList from "@/pages/subjects/list";
 import SubjectsCreate from "@/pages/subjects/create";
+import ClassesList from "@/pages/classes/list";
+import ClassesCreate from "@/pages/classes/create";
+
 function App() {
   return (
     <BrowserRouter>
@@ -50,6 +53,12 @@ function App() {
                   list: "/subjects",
                   create: "/subjects/create",
                   meta: { label: 'Subjects', icon: <BookOpen />}
+                },
+                {
+                  name: "classes",
+                  list: "/classes",
+                  create: "/classes/create",
+                  meta: { label: 'Classes', icon: <BookOpen /> }
                 }
 
               ]}
@@ -64,6 +73,11 @@ function App() {
                   <Route path="/subjects">
                     <Route index element={<SubjectsList />} />
                     <Route path="create" element={<SubjectsCreate />} />
+                  </Route>
+
+                    <Route path="/classes">
+                    <Route index element={<ClassesList />} />
+                    <Route path="create" element={<ClassesCreate />} />
                   </Route>
                 </Route>
               </Routes>
