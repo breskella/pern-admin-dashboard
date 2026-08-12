@@ -3,6 +3,8 @@ import express from 'express';
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import subjectsRouter from './db/routes/subjects.js';
+import usersRouter from './db/routes/users.js';
+import classesRouter from './db/routes/classes.js';
 import cors from 'cors';
 
 if (!process.env.DATABASE_URL) {
@@ -28,6 +30,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/subjects', subjectsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/classes', classesRouter);
 app.get('/', (req, res) => {
   res.send('Hello, welcome to the Classroom API!');
 });
