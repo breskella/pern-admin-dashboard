@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { classSchema } from "@/lib/schema.ts";
 import * as z from "zod";
-import { ImageUpload } from "@/components/refine-ui/form/image-upload.tsx";
 
 import {
     Form,
@@ -22,8 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx";
 import { Textarea } from "@/components/ui/textarea.tsx";
 import { Loader2 } from "lucide-react";
+import UploadWidget from "@/components/upload-widget";
 
-// بيانات المدرسين والمواد الدراسية (مجمعة مرة واحدة بشكل مرتب)
 const teachers = [
     { id: "1", name: "John Doe" },
     { id: "2", name: "Jane Smith" },
@@ -41,19 +40,22 @@ const Create = () => {
     const back = useBack();
 
     const form = useForm<z.infer<typeof classSchema>>({
-        resolver: zodResolver(classSchema),
+        resolver: zodResolver(classSchema) as any,
         defaultValues: {
-            status: "active",
             name: "",
             description: "",
+            subjectId: undefined,
+            teacherId: "",
+            capacity: 30,
+            status: "active",
             bannerUrl: "",
             bannerCldPubId: "",
-        },
+        }
     });
 
     const {
         handleSubmit,
-        formState: { isSubmitting },
+        formState: { isSubmitting, errors },
         control,
     } = form;
 
@@ -62,6 +64,24 @@ const Create = () => {
             console.log(values);
         } catch (error) {
             console.error("Error creating class:", error);
+        }
+    };
+
+    const bannerPublicId = form.watch('bannerCldPubId');
+
+    const setBannerImage = (file: any, field: any) => {
+        if (file) {
+            field.onChange(file.url);
+            form.setValue('bannerCldPubId', file.publicId, {
+                shouldValidate: true,
+                shouldDirty: true,
+            });
+        } else {
+            field.onChange('');
+            form.setValue('bannerCldPubId', '', {
+                shouldValidate: true,
+                shouldDirty: true
+            });
         }
     };
 
@@ -90,27 +110,32 @@ const Create = () => {
                     <CardContent className="mt-7">
                         <Form {...form}>
                             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                                {/* صورة الغلاف */}
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium leading-none">
-                                        Banner Image <span className="text-orange-600">*</span>
-                                    </label>
-                                    <ImageUpload
-                                        value={form.watch("bannerUrl")}
-                                        onChange={(url, publicId) => {
-                                            form.setValue("bannerUrl", url);
-                                            if (publicId) {
-                                                form.setValue("bannerCldPubId", publicId);
-                                            }
-                                        }}
-                                        onRemove={() => {
-                                            form.setValue("bannerUrl", "");
-                                            form.setValue("bannerCldPubId", "");
-                                        }}
-                                    />
-                                </div>
-
-                                {/* اسم الكلاس */}
+                            
+                                <FormField
+                                    control={control}
+                                    name="bannerUrl"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Banner Image <span className="text-orange-600">*</span></FormLabel>
+                                            <FormControl>
+                                                <UploadWidget
+                                                    value={field.value ? { 
+                                                        url: field.value, 
+                                                        publicId: bannerPublicId ?? '' 
+                                                    } : null}
+                                                    onChange={(file: any) => setBannerImage(file, field)}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                            {errors.bannerCldPubId && !errors.bannerUrl && (
+                                                <p className="text-destructive text-sm">
+                                                    {errors.bannerCldPubId.message?.toString()}
+                                                </p>
+                                            )}
+                                        </FormItem>
+                                    )}
+                                />
+                            
                                 <FormField
                                     control={control}
                                     name="name"
@@ -121,8 +146,9 @@ const Create = () => {
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    placeholder="Introduction to Biology - Section A"
+                                                    placeholder="Enter class name"
                                                     {...field}
+                                                    value={field.value ?? ""}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -130,7 +156,6 @@ const Create = () => {
                                     )}
                                 />
 
-                                {/* اختيار المادة والمدرس بجوار بعضهما */}
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={control}
@@ -199,7 +224,6 @@ const Create = () => {
                                     />
                                 </div>
 
-                                {/* السعة والحالة بجوار بعضهما */}
                                 <div className="grid sm:grid-cols-2 gap-4">
                                     <FormField
                                         control={control}
@@ -253,7 +277,6 @@ const Create = () => {
                                     />
                                 </div>
 
-                                {/* الوصف */}
                                 <FormField
                                     control={control}
                                     name="description"
@@ -264,6 +287,7 @@ const Create = () => {
                                                 <Textarea
                                                     placeholder="Brief description about the class"
                                                     {...field}
+                                                    value={field.value ?? ""}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -273,7 +297,7 @@ const Create = () => {
 
                                 <Separator />
 
-                                <Button type="submit" size="lg" className="w-full">
+                                <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                                     {isSubmitting ? (
                                         <div className="flex items-center gap-2">
                                             <span>Creating Class...</span>
