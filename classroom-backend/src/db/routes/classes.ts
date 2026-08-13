@@ -1,5 +1,5 @@
 import express from "express";
-import { classes, subjects, users, departments } from "../schema/index.js";
+import { classes, subjects, user, departments } from "../schema/index.js";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 import { db } from "../../index.js";
 
@@ -46,11 +46,11 @@ router.get("/", async (req, res) => {
         const classList = await db.select({
             ...getTableColumns(classes),
             subject: getTableColumns(subjects),
-            teacher: getTableColumns(users),
+            teacher: getTableColumns(user),
         })
             .from(classes)
             .leftJoin(subjects, eq(classes.subjectId, subjects.id))
-            .leftJoin(users, eq(classes.teacherId, users.id))
+            .leftJoin(user, eq(classes.teacherId, user.id))
             .where(whereClause)
             .orderBy(desc(classes.createdAt))
             .limit(limitPerPage)

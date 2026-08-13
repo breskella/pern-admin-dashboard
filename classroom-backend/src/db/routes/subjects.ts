@@ -11,7 +11,7 @@ router.get("/", async (req, res) => {
         const { search, department, page = 1, limit = 10 } = req.query;
 
         const currentPage = Math.max(1, parseInt(String(page), 10) || 1);
-        const limitPerPage = Math.max(Math.max(1, parseInt(String(limit), 10) || 10),100); //max 100 record per page
+        const limitPerPage = Math.min(Math.max(1, parseInt(String(limit), 10) || 10), 100); // max 100 records per page
 
         const offset = (currentPage - 1) * limitPerPage;
 
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 
         //if department filter exists, filter by department name
         if (department) {
-            const deptPattern = `%${String(department).replace(/[%_]/g, '\\%&')}%`;
+            const deptPattern = `%${String(department).replace(/[%_]/g, '\\$&')}%`;
             filterConditions.push(ilike(departments.name, deptPattern));
         }
 
