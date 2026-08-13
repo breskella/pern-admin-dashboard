@@ -6,6 +6,7 @@ import subjectsRouter from './db/routes/subjects.js';
 import usersRouter from './db/routes/users.js';
 import classesRouter from './db/routes/classes.js';
 import cors from 'cors';
+import securityMiddleware from "./middleware/security.js"
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not defined');
@@ -28,6 +29,8 @@ app.use(cors({
 }))
 
 app.use(express.json());
+
+app.use(securityMiddleware);
 
 app.use('/api/subjects', subjectsRouter);
 app.use('/api/users', usersRouter);

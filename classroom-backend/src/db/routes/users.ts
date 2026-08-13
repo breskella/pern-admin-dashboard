@@ -1,5 +1,5 @@
 import express from "express";
-import { users } from "../schema/index.js";
+import { user } from "../schema/index.js";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 import { db } from "../../index.js";
 
@@ -21,15 +21,15 @@ router.get("/", async (req, res) => {
         if (search) {
             filterConditions.push(
                 or(
-                    ilike(users.name, `%${search}%`),
-                    ilike(users.email, `%${search}%`)
+                    ilike(user.name, `%${search}%`),
+                    ilike(user.email, `%${search}%`)
                 )
             );
         }
 
         // If role filter exists, filter by role (e.g., 'teacher', 'student', 'admin')
         if (role) {
-            filterConditions.push(eq(users.role, String(role)));
+            filterConditions.push(eq(user.role, String(role) as "student" | "teacher" | "admin"));
         }
 
         // Combine all filters using AND if any exist
@@ -37,16 +37,16 @@ router.get("/", async (req, res) => {
 
         // Get total count
         const countResult = await db.select({ count: sql<number>`COUNT(*)` })
-            .from(users)
+            .from(user)
             .where(whereClause);
 
         const totalCount = countResult[0]?.count ?? 0;
 
         // Get paginated users
-        const usersList = await db.select(getTableColumns(users))
-            .from(users)
+        const usersList = await db.select(getTableColumns(user))
+            .from(user)
             .where(whereClause)
-            .orderBy(desc(users.createdAt))
+            .orderBy(desc(user.createdAt))
             .limit(limitPerPage)
             .offset(offset);
 
