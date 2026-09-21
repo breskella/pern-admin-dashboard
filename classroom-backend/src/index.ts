@@ -1,3 +1,6 @@
+import AgentAPI from 'apminsight';
+AgentAPI.config()
+
 import 'dotenv/config';
 import express from 'express';
 import { drizzle } from 'drizzle-orm/neon-http';
