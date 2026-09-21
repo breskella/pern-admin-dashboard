@@ -7,6 +7,8 @@ import usersRouter from './db/routes/users.js';
 import classesRouter from './db/routes/classes.js';
 import cors from 'cors';
 import securityMiddleware from "./middleware/security.js"
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from './lib/auth.js';
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL is not defined');
@@ -26,7 +28,9 @@ app.use(cors({
   origin: process.env.FRONTEND_URL,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-}))
+}));
+
+app.all('/api/auth/*splat', toNodeHandler(auth));
 
 app.use(express.json());
 
